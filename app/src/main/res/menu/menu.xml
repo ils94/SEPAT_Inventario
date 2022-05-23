@@ -18,6 +18,11 @@
         android:id="@+id/login"
         android:title="Login" />
 
+
+    <item
+        android:id="@+id/compartLink"
+        android:title="Compartilhar Link do DB" />
+
     <item
         android:id="@+id/deviceID"
         android:title="Device ID" />

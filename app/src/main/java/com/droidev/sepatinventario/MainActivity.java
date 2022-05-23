@@ -4,6 +4,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatDelegate;
@@ -81,6 +83,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
         conectarBanco();
 
         getDeviceID();
+
+        Uri uri = getIntent().getData();
+
+        if (uri != null) {
+
+            String path = uri.toString();
+
+            deepLink(path.replace("https://sepatinventario.db/", ""));
+        }
     }
 
     @Override
@@ -135,6 +146,28 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
                 break;
 
+            case R.id.compartLink:
+
+                if (tinyDB.getString("dbName").isEmpty()) {
+
+                    Toast.makeText(this, "Ainda não há nenhuma credencial salva.", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    String link = "https://sepatinventario.db/"
+                            + tinyDB.getString("dbName")
+                            + "/" + tinyDB.getString("dbUser")
+                            + "/" + tinyDB.getString("dbPass")
+                            + "/" + tinyDB.getString("dbHost")
+                            + "/" + tinyDB.getString("dbPort");
+
+                    Intent shareLinkIntent = new Intent(Intent.ACTION_SEND);
+                    shareLinkIntent.setType("text/plain");
+                    shareLinkIntent.putExtra(Intent.EXTRA_TEXT, link);
+                    startActivity(Intent.createChooser(shareLinkIntent, "Compartilhar link com..."));
+                }
+
+                break;
+
             case R.id.deviceID:
 
                 showDeviceID();
@@ -148,6 +181,36 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
     public void getDeviceID() {
 
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public void deepLink(String link) {
+
+        String[] linkArray = link.split("/");
+
+        limparChaves();
+
+        tinyDB.putString("dbName", linkArray[0]);
+        tinyDB.putString("dbUser", linkArray[1]);
+        tinyDB.putString("dbPass", linkArray[2]);
+        tinyDB.putString("dbHost", linkArray[3]);
+        tinyDB.putString("dbPort", linkArray[4]);
+
+        Toast.makeText(MainActivity.this, "Salvo.", Toast.LENGTH_SHORT).show();
+
+        new Thread(() -> {
+
+            try {
+
+                if (!(connection == null)) {
+
+                    connection.close();
+                }
+
+                conectarBanco();
+            } catch (SQLException e) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
     public void showDeviceID() {
