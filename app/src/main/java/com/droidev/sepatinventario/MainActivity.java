@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
     private Boolean confirmar = false;
     private String data, hora;
+
+    String deviceID;
 
     TinyDB tinyDB;
 
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
         conectarBanco();
 
+        getDeviceID();
     }
 
     @Override
@@ -113,12 +117,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
         switch (item.getItemId()) {
 
-            case R.id.login:
-
-                login();
-
-                break;
-
             case R.id.carregar:
 
                 carregar();
@@ -131,13 +129,41 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
                 break;
 
-            case R.id.deletar:
+            case R.id.login:
 
-                deletar();
+                login();
+
+                break;
+
+            case R.id.deviceID:
+
+                showDeviceID();
 
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressLint("HardwareIds")
+    public void getDeviceID() {
+
+        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public void showDeviceID() {
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle("Device ID: " + deviceID)
+                .setPositiveButton("Ok", null)
+                .show();
+
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+        positiveButton.setOnClickListener(v -> {
+
+            dialog.dismiss();
+        });
     }
 
     public void dataHora() {
@@ -326,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
                         dataHora();
 
-                        dbQueries.inserir(MainActivity.this, connection, descricao.getText().toString(), quantidade.getText().toString(), local.getText().toString(), data + " - " + hora);
+                        dbQueries.inserir(MainActivity.this, connection, descricao.getText().toString(), quantidade.getText().toString(), local.getText().toString(), data + " - " + hora, deviceID);
 
                         id.setText("");
                         descricao.setText("");
@@ -377,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
                         dataHora();
 
-                        dbQueries.alterar(MainActivity.this, connection, descricao.getText().toString(), quantidade.getText().toString(), local.getText().toString(), data + " - " + hora, id.getText().toString());
+                        dbQueries.alterar(MainActivity.this, connection, descricao.getText().toString(), quantidade.getText().toString(), local.getText().toString(), data + " - " + hora, deviceID, id.getText().toString());
 
                         id.setText("");
                         descricao.setText("");
@@ -473,46 +499,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
                 Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
             }
 
-        });
-    }
-
-    public void deletar() {
-
-        EditText editTextID = new EditText(this);
-        editTextID.setInputType(InputType.TYPE_CLASS_TEXT);
-        editTextID.setMaxLines(1);
-
-        LinearLayout lay = new LinearLayout(this);
-        lay.setOrientation(LinearLayout.VERTICAL);
-        lay.addView(editTextID);
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setCancelable(false)
-                .setTitle("Deletar Entrada")
-                .setMessage("Insira o ID da entrada que deseja deletar do banco de dados:")
-                .setPositiveButton("Deletar", null)
-                .setNegativeButton("Cancelar", null)
-                .setView(lay)
-                .show();
-
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-
-        positiveButton.setOnClickListener(v -> {
-
-            if (editTextID.getText().toString().isEmpty()) {
-
-                Toast.makeText(MainActivity.this, "Você precisa informar um ID primeiro.", Toast.LENGTH_SHORT).show();
-
-            } else {
-
-                dbQueries.deletar(MainActivity.this, connection, editTextID.getText().toString());
-
-                carregar();
-
-                Toast.makeText(this, "ID: " + editTextID.getText().toString() + " foi deletado.", Toast.LENGTH_SHORT).show();
-
-                dialog.dismiss();
-            }
         });
     }
 }

@@ -33,8 +33,9 @@ public class DBQueries {
                     String QTD = rs.getString("QUANTIDADE");
                     String local = rs.getString("LOCAL");
                     String dataHora = rs.getString("DATA_HORA");
+                    String modificado = rs.getString("MODIFICADO");
 
-                    visualizador.add("ID: " + id + "\nDescrição: " + descricao + "\nQuantidade: " + QTD + "\nLocal: " + local + "\nÚltima Modificação: " + dataHora);
+                    visualizador.add("ID: " + id + "\nDescrição: " + descricao + "\nQuantidade: " + QTD + "\nLocal: " + local + "\nÚltima Modificação: " + dataHora + "\nModificado por: " + modificado);
 
                 }
 
@@ -64,6 +65,7 @@ public class DBQueries {
                         "OR QUANTIDADE ILIKE ? " +
                         "OR LOCAL ILIKE ? " +
                         "OR DATA_HORA ILIKE ? " +
+                        "OR MODIFICADO ILIKE ? " +
                         "ORDER BY ID DESC";
 
                 pst = connection.prepareStatement(sql);
@@ -71,6 +73,7 @@ public class DBQueries {
                 pst.setString(2, "%" + string + "%");
                 pst.setString(3, "%" + string + "%");
                 pst.setString(4, "%" + string + "%");
+                pst.setString(5, "%" + string + "%");
 
                 ResultSet rs = pst.executeQuery();
 
@@ -83,8 +86,10 @@ public class DBQueries {
                     String QTD = rs.getString("QUANTIDADE");
                     String local = rs.getString("LOCAL");
                     String dataHora = rs.getString("DATA_HORA");
+                    String modificado = rs.getString("MODIFICADO");
 
-                    visualizador.add("ID: " + id + "\nDescrição: " + descricao + "\nQuantidade: " + QTD + "\nLocal: " + local + "\nÚltima Modificação: " + dataHora);
+                    visualizador.add("ID: " + id + "\nDescrição: " + descricao + "\nQuantidade: " + QTD + "\nLocal: " + local + "\nÚltima Modificação: " + dataHora + "\nModificado por: " + modificado);
+
                 }
 
             } catch (Exception e) {
@@ -101,7 +106,7 @@ public class DBQueries {
         return visualizador;
     }
 
-    public void alterar(Activity activity, Connection connection, String descricao, String quantidade, String local, String dataHora, String id) {
+    public void alterar(Activity activity, Connection connection, String descricao, String quantidade, String local, String dataHora, String modificado, String id) {
 
         Thread thread = new Thread(() -> {
 
@@ -109,7 +114,7 @@ public class DBQueries {
 
                 PreparedStatement pst;
 
-                String sql = "UPDATE INVENTARIO SET DESCRICAO = ?, QUANTIDADE = ?, LOCAL = ?, DATA_HORA = ? WHERE ID = ?";
+                String sql = "UPDATE INVENTARIO SET DESCRICAO = ?, QUANTIDADE = ?, LOCAL = ?, DATA_HORA = ?, MODIFICADO = ? WHERE ID = ?";
 
                 pst = connection.prepareStatement(sql);
 
@@ -117,7 +122,8 @@ public class DBQueries {
                 pst.setString(2, quantidade.toUpperCase());
                 pst.setString(3, local.toUpperCase());
                 pst.setString(4, dataHora.toUpperCase());
-                pst.setInt(5, Integer.parseInt(id));
+                pst.setString(5, modificado);
+                pst.setInt(6, Integer.parseInt(id));
 
                 pst.executeUpdate();
 
@@ -133,14 +139,14 @@ public class DBQueries {
         }
     }
 
-    public void inserir(Activity activity, Connection connection, String descricao, String quantidade, String local, String dataHora) {
+    public void inserir(Activity activity, Connection connection, String descricao, String quantidade, String local, String dataHora, String modificado) {
         Thread thread = new Thread(() -> {
 
             try {
 
                 PreparedStatement pst;
 
-                String sql = "INSERT INTO INVENTARIO (DESCRICAO, QUANTIDADE, LOCAL, DATA_HORA) VALUES (?, ?, ?, ?)";
+                String sql = "INSERT INTO INVENTARIO (DESCRICAO, QUANTIDADE, LOCAL, DATA_HORA, MODIFICADO) VALUES (?, ?, ?, ?, ?)";
 
                 pst = connection.prepareStatement(sql);
 
@@ -148,34 +154,7 @@ public class DBQueries {
                 pst.setString(2, quantidade.toUpperCase());
                 pst.setString(3, local.toUpperCase());
                 pst.setString(4, dataHora.toUpperCase());
-
-                pst.executeUpdate();
-
-            } catch (Exception e) {
-                activity.runOnUiThread(() -> Toast.makeText(activity.getBaseContext(), e.toString(), Toast.LENGTH_SHORT).show());
-            }
-        });
-        thread.start();
-        try {
-            thread.join();
-        } catch (Exception e) {
-            activity.runOnUiThread(() -> Toast.makeText(activity.getBaseContext(), e.toString(), Toast.LENGTH_SHORT).show());
-        }
-    }
-
-    public void deletar(Activity activity, Connection connection, String id) {
-
-        Thread thread = new Thread(() -> {
-
-            try {
-
-                PreparedStatement pst;
-
-                String sql = "DELETE FROM INVENTARIO WHERE ID = ?";
-
-                pst = connection.prepareStatement(sql);
-
-                pst.setInt(1, Integer.parseInt(id));
+                pst.setString(5, modificado);
 
                 pst.executeUpdate();
 
