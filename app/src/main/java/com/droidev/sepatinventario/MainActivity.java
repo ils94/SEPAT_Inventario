@@ -160,10 +160,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
 
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
 
-        positiveButton.setOnClickListener(v -> {
-
-            dialog.dismiss();
-        });
+        positiveButton.setOnClickListener(v -> dialog.dismiss());
     }
 
     public void dataHora() {
